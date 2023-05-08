@@ -12,7 +12,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'VLC Recorder',
       theme: ThemeData.dark(),
-      home: StreamDownloader(streamUrl: 'https://live.sgpc.net:8443/;nocache=889869',),
+      // home: const PopupMenuExample(),
+      home: const StreamDownloader(streamUrl: 'https://live.sgpc.net:8443/;nocache=889869',),
     );
   }
 }

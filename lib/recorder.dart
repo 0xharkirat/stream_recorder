@@ -16,6 +16,8 @@ class StreamDownloader extends StatefulWidget {
 class _StreamDownloaderState extends State<StreamDownloader> {
   late http.StreamedResponse _response;
   late bool _downloading;
+  Color _color = Colors.red;
+  BorderRadiusGeometry _borderRadius = BorderRadius.circular(100);
 
   var client;
   bool loading = false;
@@ -30,36 +32,95 @@ class _StreamDownloaderState extends State<StreamDownloader> {
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Stream Downloader'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
           children: [
-            loading
-                ? const CircularProgressIndicator()
-                : Text(
-                    'Recorded: ${_formatDuration(_elapsedTime)}',
-                    style: const TextStyle(fontSize: 24.0),
-                  ),
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text('Drawer Header'),
+            ),
             if (!_downloading)
-              ElevatedButton(
-                onPressed: () {
+              ListTile(
+                title: const Text('Start Recording'),
+                onTap: () {
+                  // Update the state of the app
+                  // ...
+                  // Then close the drawer
                   _startDownload();
+                  Navigator.pop(context);
                 },
-                child: const Text('Start Recording'),
               ),
             if (_downloading)
-              ElevatedButton(
-                onPressed: () {
+              ListTile(
+                title: const Text('Stop/Save Recording'),
+                onTap: () {
+                  // Update the state of the app
+                  // ...
+                  // Then close the drawer
                   _stopDownload();
+                  Navigator.pop(context);
                 },
-                child: const Text('Stop/Save Recording'),
               ),
           ],
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.only(right: 8),
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: AnimatedOpacity(
+            opacity: _downloading ? 1 : 0,
+            duration: const Duration(seconds: 1),
+            child: AnimatedContainer(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _color,
+                  borderRadius: _borderRadius,
+                ),
+                // Define how long the animation should take.
+                duration: const Duration(seconds: 1),
+                // Provide an optional curve to make the animation feel smoother.
+                curve: Curves.fastOutSlowIn,
+                child: loading
+                    ? const CircularProgressIndicator(
+                        color: Colors.white,
+                      )
+                    : Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: InkWell(
+                          onTap: _stopDownload,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Icon(
+                                Icons.stop_circle_rounded,
+                                color: Colors.red,
+                              ),
+                              Text(
+                                _formatDuration(_elapsedTime),
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ],
+                          ),
+                        ),
+                    )),
+          ),
         ),
       ),
     );
@@ -67,6 +128,8 @@ class _StreamDownloaderState extends State<StreamDownloader> {
 
   void _startDownload() async {
     setState(() {
+      _color = Colors.red;
+      _borderRadius = BorderRadius.circular(100);
       _downloading = true;
       _elapsedTime = Duration.zero;
       loading = true;
@@ -78,6 +141,8 @@ class _StreamDownloaderState extends State<StreamDownloader> {
 
     setState(() {
       loading = false;
+      _color = Colors.white;
+      _borderRadius = BorderRadius.circular(50);
     });
 
     // final dir = await getTemporaryDirectory();
@@ -122,6 +187,7 @@ class _StreamDownloaderState extends State<StreamDownloader> {
   void _stopDownload() async {
     await client.close();
     setState(() {
+      _elapsedTime = Duration.zero;
       _downloading = false;
     });
   }
